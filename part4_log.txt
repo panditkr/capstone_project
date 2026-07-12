@@ -1,0 +1,69 @@
+======================================================================
+STEP 1: call_llm SANITY TEST
+[call_llm] real API unavailable (LLM_API_KEY environment variable not set); using offline_mock_llm fallback
+Test prompt output: {"prediction_label": "at-or-below-median value", "confidence_level": "low", "top_reason": "Property size is the dominant driver of this call.", "second_reason": "Unit type 'unknown' in the listed area shifts the price tier consistent with the prediction.", "next_step": "Confirm with a comparable-sales check for the same area/room type before final pricing."}
+======================================================================
+STEP 2: PII GUARDRAIL DEMO
+Input WITH email -> BLOCKED
+Input WITHOUT PII -> ALLOWED
+======================================================================
+STEP 3: LOAD BEST MODEL + BUILD encode_record()
+======================================================================
+STEP 4: HAND-CRAFTED INPUTS -> PREDICT -> LLM EXPLANATION
+SYSTEM PROMPT (verbatim):
+You are a real-estate pricing model explainer. You will be given the raw feature values of a property transaction, the trained model's predicted class (1 = predicted transaction value above the dataset median, 0 = at or below median), and the model's predicted probability for class 1. Respond with ONLY a single valid JSON object (no markdown fences, no extra text) with exactly these fields: prediction_label (string), confidence_level (one of: low, medium, high), top_reason (string), second_reason (string), next_step (string). Base your reasoning only on the feature values provided; do not invent facts.
+
+USER PROMPT TEMPLATE (verbatim, with placeholders):
+Feature values:
+AREA_EN: {AREA_EN}
+PROP_SB_TYPE_EN: {PROP_SB_TYPE_EN}
+ACTUAL_AREA: {ACTUAL_AREA}
+ROOMS_EN: {ROOMS_EN}
+IS_FREE_HOLD_EN: {IS_FREE_HOLD_EN}
+NEAREST_METRO_EN: {NEAREST_METRO_EN}
+NEAREST_MALL_EN: {NEAREST_MALL_EN}
+NEAREST_LANDMARK_EN: {NEAREST_LANDMARK_EN}
+TRANS_MONTH: {TRANS_MONTH}
+
+Predicted class: {pred_class}
+Predicted probability of class 1 (above-median value): {pred_proba:.4f}
+
+Return the JSON explanation now.
+[call_llm] real API unavailable (LLM_API_KEY environment variable not set); using offline_mock_llm fallback
+
+Input: {'PROCEDURE_EN': 'Sale', 'IS_FREE_HOLD_EN': 'Free Hold', 'AREA_EN': 'PALM JUMEIRAH', 'PROP_SB_TYPE_EN': 'Flat', 'ACTUAL_AREA': 210.0, 'ROOMS_EN': '3 B/R', 'NEAREST_METRO_EN': 'Unknown', 'NEAREST_MALL_EN': 'Marina Mall', 'NEAREST_LANDMARK_EN': 'Burj Al Arab', 'TRANS_MONTH': 5}
+Predicted class: 1  Probability(class=1): 0.9750
+LLM explanation JSON: {'prediction_label': 'above-median value', 'confidence_level': 'high', 'top_reason': 'Property size is the dominant driver of this call. (ACTUAL_AREA=210.0 sqm)', 'second_reason': "Unit type '3 B/R' in PALM JUMEIRAH shifts the price tier consistent with the prediction.", 'next_step': 'Confirm with a comparable-sales check for the same area/room type before final pricing.'}
+Validation status: pass
+[call_llm] real API unavailable (LLM_API_KEY environment variable not set); using offline_mock_llm fallback
+
+Input: {'PROCEDURE_EN': 'Sale', 'IS_FREE_HOLD_EN': 'Free Hold', 'AREA_EN': 'INTERNATIONAL CITY PH 1', 'PROP_SB_TYPE_EN': 'Flat', 'ACTUAL_AREA': 45.0, 'ROOMS_EN': 'Studio', 'NEAREST_METRO_EN': 'Rashidiya Metro Station', 'NEAREST_MALL_EN': 'City Centre Mirdif', 'NEAREST_LANDMARK_EN': 'Unknown', 'TRANS_MONTH': 3}
+Predicted class: 0  Probability(class=1): 0.0000
+LLM explanation JSON: {'prediction_label': 'at-or-below-median value', 'confidence_level': 'high', 'top_reason': 'Property size is the dominant driver of this call. (ACTUAL_AREA=45.0 sqm)', 'second_reason': "Unit type 'Studio' in INTERNATIONAL CITY PH 1 shifts the price tier consistent with the prediction.", 'next_step': 'Confirm with a comparable-sales check for the same area/room type before final pricing.'}
+Validation status: pass
+[call_llm] real API unavailable (LLM_API_KEY environment variable not set); using offline_mock_llm fallback
+
+Input: {'PROCEDURE_EN': 'Sale', 'IS_FREE_HOLD_EN': 'Free Hold', 'AREA_EN': 'BUSINESS BAY', 'PROP_SB_TYPE_EN': 'Flat', 'ACTUAL_AREA': 95.5, 'ROOMS_EN': '2 B/R', 'NEAREST_METRO_EN': 'Business Bay Metro Station', 'NEAREST_MALL_EN': 'Dubai Mall', 'NEAREST_LANDMARK_EN': 'Downtown Dubai', 'TRANS_MONTH': 8}
+Predicted class: 1  Probability(class=1): 0.9750
+LLM explanation JSON: {'prediction_label': 'above-median value', 'confidence_level': 'high', 'top_reason': 'Property size is the dominant driver of this call. (ACTUAL_AREA=95.5 sqm)', 'second_reason': "Unit type '2 B/R' in BUSINESS BAY shifts the price tier consistent with the prediction.", 'next_step': 'Confirm with a comparable-sales check for the same area/room type before final pricing.'}
+Validation status: pass
+======================================================================
+STEP 5: TEMPERATURE A/B COMPARISON (0.0 vs 0.7)
+[call_llm] real API unavailable (LLM_API_KEY environment variable not set); using offline_mock_llm fallback
+[call_llm] real API unavailable (LLM_API_KEY environment variable not set); using offline_mock_llm fallback
+
+Input: PALM JUMEIRAH / 3 B/R
+T=0.0: {"prediction_label": "above-median value", "confidence_level": "high", "top_reason": "Property size is the dominant driver of this call. (ACTUAL_AREA=210.0 sqm)", "second_reason": "Unit type '3 B/R' in PALM JUMEIRAH shifts the price tier consistent with the prediction.", "next_step": "Confirm with a comparable-sales check for the same area/room type before final pricing."}
+T=0.7: {"prediction_label": "above-median value", "confidence_level": "high", "top_reason": "Unit size stands out as the main factor behind this result. (ACTUAL_AREA=210.0 sqm)", "second_reason": "Unit type '3 B/R' in PALM JUMEIRAH shifts the price tier consistent with the prediction.", "next_step": "Confirm with a comparable-sales check for the same area/room type before final pricing."}
+[call_llm] real API unavailable (LLM_API_KEY environment variable not set); using offline_mock_llm fallback
+[call_llm] real API unavailable (LLM_API_KEY environment variable not set); using offline_mock_llm fallback
+
+Input: INTERNATIONAL CITY PH 1 / Studio
+T=0.0: {"prediction_label": "at-or-below-median value", "confidence_level": "high", "top_reason": "Property size is the dominant driver of this call. (ACTUAL_AREA=45.0 sqm)", "second_reason": "Unit type 'Studio' in INTERNATIONAL CITY PH 1 shifts the price tier consistent with the prediction.", "next_step": "Confirm with a comparable-sales check for the same area/room type before final pricing."}
+T=0.7: {"prediction_label": "at-or-below-median value", "confidence_level": "high", "top_reason": "Unit size stands out as the main factor behind this result. (ACTUAL_AREA=45.0 sqm)", "second_reason": "Unit type 'Studio' in INTERNATIONAL CITY PH 1 shifts the price tier consistent with the prediction.", "next_step": "Confirm with a comparable-sales check for the same area/room type before final pricing."}
+[call_llm] real API unavailable (LLM_API_KEY environment variable not set); using offline_mock_llm fallback
+[call_llm] real API unavailable (LLM_API_KEY environment variable not set); using offline_mock_llm fallback
+
+Input: BUSINESS BAY / 2 B/R
+T=0.0: {"prediction_label": "above-median value", "confidence_level": "high", "top_reason": "Property size is the dominant driver of this call. (ACTUAL_AREA=95.5 sqm)", "second_reason": "Unit type '2 B/R' in BUSINESS BAY shifts the price tier consistent with the prediction.", "next_step": "Confirm with a comparable-sales check for the same area/room type before final pricing."}
+T=0.7: {"prediction_label": "above-median value", "confidence_level": "high", "top_reason": "The size of the unit weighed most heavily on this outcome. (ACTUAL_AREA=95.5 sqm)", "second_reason": "Unit type '2 B/R' in BUSINESS BAY shifts the price tier consistent with the prediction.", "next_step": "Confirm with a comparable-sales check for the same area/room type before final pricing."}
