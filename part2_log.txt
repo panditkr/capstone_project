@@ -1,0 +1,82 @@
+Loaded cleaned_data.csv: (18085, 15)
+y_reg = TRANS_VALUE (continuous, AED)
+y_clf = 1 if TRANS_VALUE > median else 0. Median = 1190000.0
+y_clf class balance:
+ TRANS_VALUE
+0    0.500525
+1    0.499475
+
+Dropped columns (leakage / too sparse): ['TRANS_VALUE', 'price_per_sqm', 'size_category', 'value_band', 'PROJECT_EN', 'INSTANCE_DATE']
+Remaining feature columns: ['PROCEDURE_EN', 'IS_FREE_HOLD_EN', 'AREA_EN', 'PROP_SB_TYPE_EN', 'ACTUAL_AREA', 'ROOMS_EN', 'NEAREST_METRO_EN', 'NEAREST_MALL_EN', 'NEAREST_LANDMARK_EN', 'TRANS_MONTH']
+======================================================================
+ENCODING
+IS_FREE_HOLD_EN label-encoded: Non Free Hold=0, Free Hold=1 (binary, inherently ordinal)
+ROOMS_EN ordinal mapping (by median ACTUAL_AREA, ascending): {'Studio': 0, '1 B/R': 1, 'Unknown': 2, 'Shop': 3, 'Office': 4, '2 B/R': 5, '3 B/R': 6, '4 B/R': 7, 'PENTHOUSE': 8, '5 B/R': 9, '6 B/R': 10}
+
+One-hot encoding (no natural order, drop_first=True): ['PROCEDURE_EN', 'AREA_EN', 'PROP_SB_TYPE_EN', 'NEAREST_METRO_EN', 'NEAREST_MALL_EN', 'NEAREST_LANDMARK_EN']
+Rationale: label-encoding e.g. AREA_EN as 0,1,2...97 would imply a false ordinal distance/ranking between areas (that 'JUMEIRAH VILLAGE CIRCLE' is 'between' two other areas numerically), which the model would wrongly treat as meaningful magnitude. One-hot encoding removes that false ordinal relationship.
+X shape after encoding: (18085, 171)
+======================================================================
+SPLIT + SCALING
+Train shape: (14468, 171) Test shape: (3617, 171)
+Scaler fit on X_train only. Fitting on the full dataset (train+test) would be data leakage: the mean/std used to standardize every feature would then encode information about the test set's distribution, so the model would be indirectly 'trained' on statistics it should never have seen before evaluation, inflating reported test performance relative to real-world deployment.
+======================================================================
+LINEAR REGRESSION
+Linear Regression -> MSE: 1,808,569,670,624.43  R2: 0.6632
+
+Top 3 features by |coefficient|:
+                   feature          coef      abs_coef
+1             ACTUAL_AREA  1.833571e+06  1.833571e+06
+89  AREA_EN_PALM JUMEIRAH  6.229885e+05  6.229885e+05
+28   AREA_EN_BURJ KHALIFA  4.846925e+05  4.846925e+05
+======================================================================
+RIDGE REGRESSION
+Ridge Regression (alpha=1.0) -> MSE: 1,808,337,492,197.20  R2: 0.6632
+
+Comparison table:
+             Model          MSE       R2
+Linear Regression 1.808570e+12 0.663173
+Ridge (alpha=1.0) 1.808337e+12 0.663216
+======================================================================
+LOGISTIC REGRESSION - CLASS BALANCE CHECK
+TRANS_VALUE
+1    0.502972
+0    0.497028
+Minority class share: 49.7%
+Using class_weight='balanced': False (imblearn/SMOTE unavailable in this offline sandbox; class_weight='balanced' is the documented alternative and is applied identically regardless, since the median split here is naturally close to 50/50).
+
+Confusion matrix:
+ [[1713  148]
+ [ 177 1579]]
+
+Classification report:
+               precision    recall  f1-score   support
+
+           0       0.91      0.92      0.91      1861
+           1       0.91      0.90      0.91      1756
+
+    accuracy                           0.91      3617
+   macro avg       0.91      0.91      0.91      3617
+weighted avg       0.91      0.91      0.91      3617
+
+AUC: 0.9672563493064081
+======================================================================
+THRESHOLD SENSITIVITY (0.30 - 0.70)
+ Threshold  Precision   Recall       F1
+       0.3   0.847561 0.949886 0.895811
+       0.4   0.889436 0.925399 0.907061
+       0.5   0.914302 0.899203 0.906690
+       0.6   0.935305 0.864465 0.898491
+       0.7   0.943864 0.823462 0.879562
+Threshold maximising F1: 0.4
+======================================================================
+REGULARIZATION EXPERIMENT
+             Model  Precision   Recall      AUC
+  C=1.0 (baseline)   0.914302 0.899203 0.967256
+C=0.01 (strong L2)   0.905983 0.905467 0.965421
+======================================================================
+BOOTSTRAP CI FOR AUC DIFFERENCE (C=1.0 minus C=0.01)
+Bootstrap iterations used: 500
+Mean AUC difference (C=1.0 - C=0.01): 0.00177
+95% CI: [0.00006, 0.00363]
+Excludes zero: True
