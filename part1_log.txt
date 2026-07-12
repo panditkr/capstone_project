@@ -1,0 +1,191 @@
+======================================================================
+TASK 1: LOAD DATA
+First 5 rows:
+   INSTANCE_DATE PROCEDURE_EN IS_FREE_HOLD_EN                  AREA_EN PROP_SB_TYPE_EN  TRANS_VALUE  ACTUAL_AREA ROOMS_EN            NEAREST_METRO_EN     NEAREST_MALL_EN           NEAREST_LANDMARK_EN        PROJECT_EN  price_per_sqm size_category value_band
+0    2026-01-02         Sale       Free Hold             BURJ KHALIFA            Flat    2600000.0       140.95    2 B/R  Business Bay Metro Station          Dubai Mall                Downtown Dubai      BAHWAN TOWER       18446.26       Premium   High-End
+1    2026-01-02         Sale       Free Hold             BURJ KHALIFA            Flat    2731642.0       134.46    2 B/R  Business Bay Metro Station          Dubai Mall                Downtown Dubai  Imperial  Avenue       20315.65       Premium   High-End
+2    2026-03-09         Sale       Free Hold  JUMEIRAH VILLAGE CIRCLE            Flat     620000.0        42.87   Studio       Nakheel Metro Station         Marina Mall  Sports City Swimming Academy   PANTHEON ELYSEE       14462.33       Compact      Entry
+3    2026-03-06         Sale       Free Hold  JUMEIRAH VILLAGE CIRCLE            Flat     540000.0        36.86   Studio       Nakheel Metro Station         Marina Mall  Sports City Swimming Academy               NaN       14650.03       Compact      Entry
+4    2026-03-06         Sale       Free Hold  INTERNATIONAL CITY PH 1            Flat     515000.0        66.50    1 B/R     Rashidiya Metro Station  City Centre Mirdif                           NaN               NaN        7744.36      Mid-Size      Entry
+
+Dtypes:
+ INSTANCE_DATE              str
+PROCEDURE_EN               str
+IS_FREE_HOLD_EN            str
+AREA_EN                    str
+PROP_SB_TYPE_EN            str
+TRANS_VALUE            float64
+ACTUAL_AREA            float64
+ROOMS_EN                   str
+NEAREST_METRO_EN           str
+NEAREST_MALL_EN            str
+NEAREST_LANDMARK_EN        str
+PROJECT_EN                 str
+price_per_sqm          float64
+size_category              str
+value_band                 str
+
+Shape: (18085, 15)
+======================================================================
+TASK 2: NULL VALUE ANALYSIS
+                     null_count  null_pct
+INSTANCE_DATE                 0      0.00
+PROCEDURE_EN                  0      0.00
+IS_FREE_HOLD_EN               0      0.00
+AREA_EN                       0      0.00
+PROP_SB_TYPE_EN               0      0.00
+TRANS_VALUE                   0      0.00
+ACTUAL_AREA                   0      0.00
+ROOMS_EN                    362      2.00
+NEAREST_METRO_EN           3572     19.75
+NEAREST_MALL_EN            3753     20.75
+NEAREST_LANDMARK_EN        1652      9.13
+PROJECT_EN                 4067     22.49
+price_per_sqm                 0      0.00
+size_category                 0      0.00
+value_band                    0      0.00
+
+Columns exceeding 20% null rate: ['NEAREST_MALL_EN', 'PROJECT_EN']
+
+Numeric columns (raw): ['TRANS_VALUE', 'ACTUAL_AREA', 'price_per_sqm']
+Filled categorical column 'ROOMS_EN' nulls with 'Unknown' (null rate 2.00% < 20%)
+Filled categorical column 'NEAREST_METRO_EN' nulls with 'Unknown' (null rate 19.75% < 20%)
+Filled categorical column 'NEAREST_LANDMARK_EN' nulls with 'Unknown' (null rate 9.13% < 20%)
+Filled high-null categorical column 'NEAREST_MALL_EN' with 'Unknown' (null rate 20.75% > 20%, flagged in README)
+Filled high-null categorical column 'PROJECT_EN' with 'Unknown' (null rate 22.49% > 20%, flagged in README)
+======================================================================
+TASK 3: DUPLICATES
+Duplicate rows found: 0
+Shape after dropping duplicates: (18085, 15)
+Null % changed after dedup? False
+======================================================================
+TASK 4: DTYPE CORRECTION
+Memory usage before conversion (bytes): 13436266
+Converted INSTANCE_DATE to datetime64. New dtype: datetime64[us]
+Memory usage after conversion (bytes): 1921524
+Memory reduction: 11514742 bytes (85.7% smaller)
+======================================================================
+TASK 5: DESCRIBE + SKEWNESS
+        TRANS_VALUE   ACTUAL_AREA  price_per_sqm
+count  1.808500e+04  18085.000000   1.808500e+04
+mean   1.857787e+06     94.380744   1.864498e+04
+std    2.756622e+06     77.235185   2.056915e+04
+min    2.312380e+03      7.310000   3.310000e+01
+25%    7.300000e+05     54.770000   1.139983e+04
+50%    1.190000e+06     78.110000   1.579517e+04
+75%    2.098512e+06    115.530000   2.259084e+04
+max    1.000000e+08   4827.040000   2.207993e+06
+
+Skewness: {'TRANS_VALUE': np.float64(11.314104484699321), 'ACTUAL_AREA': np.float64(16.54183034332227), 'price_per_sqm': np.float64(68.95444092294768)}
+Most skewed column: price_per_sqm skew = 68.95444092294768
+======================================================================
+TASK 6: IQR OUTLIERS
+TRANS_VALUE: Q1=730000.00 Q3=2098512.00 IQR=1368512.00 bounds=(-1322768.00, 4151280.00) outliers=1348 (7.45% of rows)
+ACTUAL_AREA: Q1=54.77 Q3=115.53 IQR=60.76 bounds=(-36.37, 206.67) outliers=769 (4.25% of rows)
+======================================================================
+TASK 7: VISUALIZATIONS
+Pearson corr ACTUAL_AREA vs TRANS_VALUE: 0.6993563073480976
+
+Pearson correlation matrix:
+                TRANS_VALUE  ACTUAL_AREA  price_per_sqm
+TRANS_VALUE       1.000000     0.699356       0.526102
+ACTUAL_AREA       0.699356     1.000000       0.061728
+price_per_sqm     0.526102     0.061728       1.000000
+Highest |correlation| pair: ('TRANS_VALUE', 'ACTUAL_AREA') value= 0.6993563073481037
+======================================================================
+TASK 8a: MEAN VS MEDIAN FOR TOP-2 SKEWED COLUMNS
+price_per_sqm: mean=18644.98, median=15795.17, skew=68.954
+  -> isnull().sum() after imputation: 0
+ACTUAL_AREA: mean=94.38, median=78.11, skew=16.542
+  -> isnull().sum() after imputation: 0
+======================================================================
+TASK 8b: SPEARMAN VS PEARSON
+Pearson:
+                TRANS_VALUE  ACTUAL_AREA  price_per_sqm
+TRANS_VALUE       1.000000     0.699356       0.526102
+ACTUAL_AREA       0.699356     1.000000       0.061728
+price_per_sqm     0.526102     0.061728       1.000000
+
+Spearman:
+                TRANS_VALUE  ACTUAL_AREA  price_per_sqm
+TRANS_VALUE       1.000000     0.757804       0.677971
+ACTUAL_AREA       0.757804     1.000000       0.086485
+price_per_sqm     0.677971     0.086485       1.000000
+
+Difference table (all pairs, since only 3 numeric columns exist):
+          col_a          col_b  abs_diff  spearman   pearson
+1  TRANS_VALUE  price_per_sqm  0.151868  0.677971  0.526102
+0  TRANS_VALUE    ACTUAL_AREA  0.058447  0.757804  0.699356
+2  ACTUAL_AREA  price_per_sqm  0.024757  0.086485  0.061728
+======================================================================
+TASK 8c: GROUPED AGGREGATION
+                                         mean           std  count
+AREA_EN                                                           
+BLUEWATERS                       1.102823e+07  1.232738e+07     48
+DUBAI WATER CANAL                7.022354e+06  7.652116e+06     52
+PALM JUMEIRAH                    6.185711e+06  7.634652e+06    372
+Marsa Dubai                      6.024386e+06  5.197845e+06     35
+CITY WALK                        5.253851e+06  3.840395e+06    117
+TECOM SITE A                     4.813589e+06  4.035259e+06     47
+DUBAI HARBOUR                    4.360117e+06  2.741933e+06    146
+BURJ KHALIFA                     4.234265e+06  4.380580e+06    830
+JUMEIRAH LIVING                  4.071808e+06  3.277164e+06     30
+JUMEIRAH BEACH RESIDENCE         3.780055e+06  3.712472e+06    201
+Um Suqaim Third                  3.502375e+06  1.967393e+06     40
+LA MER                           3.433547e+06  1.855338e+06     39
+Zaabeel Second                   3.165910e+06  1.286925e+06     54
+Al Kifaf                         3.005604e+06  1.117851e+06     49
+DUBAI CREEK HARBOUR              2.824009e+06  1.345919e+06    625
+DUBAI INVESTMENT PARK FIRST      2.583198e+06  5.699439e+06     47
+Mirdif                           2.546436e+06  4.358675e+06     42
+AL BARARI                        2.410101e+06  1.415542e+06    103
+BARSHA HEIGHTS                   2.346456e+06  3.354063e+06    143
+DUBAI HILLS                      2.340743e+06  1.384474e+06    392
+BUSINESS BAY                     2.301076e+06  2.917490e+06   1636
+MBR DISTRICT 1                   2.287945e+06  1.464247e+06     58
+JADDAF WATERFRONT                2.218161e+06  1.978698e+06     60
+DUBAI MARINA                     2.162533e+06  1.555165e+06    981
+THE GREENS                       2.116335e+06  1.281287e+06    209
+JUMEIRAH LAKES TOWERS            2.020385e+06  1.750544e+06    780
+MEYDAN AVENUE                    1.993176e+06  1.066095e+06     76
+SOBHA HEARTLAND                  1.961749e+06  1.411610e+06    450
+MOTOR CITY                       1.795907e+06  4.258929e+06    332
+JUMEIRAH GOLF                    1.698466e+06  9.055464e+05     35
+Al Satwa                         1.689246e+06  5.684895e+05     49
+DUBAI HEALTHCARE CITY - PHASE 2  1.618065e+06  1.169209e+06    213
+EMAAR SOUTH                      1.575837e+06  3.644905e+05     34
+Al Yelayiss 2                    1.452272e+06  4.873418e+05    124
+DUBAI SCIENCE PARK               1.251448e+06  7.033812e+05     84
+AL FURJAN                        1.241129e+06  7.751018e+05    455
+MEYDAN ONE                       1.175354e+06  1.029011e+06    446
+TOWN SQUARE                      1.103107e+06  4.134183e+05    243
+SILICON OASIS                    1.083445e+06  4.321600e+06    532
+JUMEIRAH VILLAGE CIRCLE          1.079518e+06  7.416532e+05   1985
+Jabal Ali First                  1.063823e+06  3.142495e+05     32
+MBR DISTRICT 7                   1.031219e+06  3.356249e+05     31
+MAJAN                            1.014067e+06  4.416100e+05    314
+DAMAC HILLS                      9.849267e+05  6.281046e+05    243
+ARJAN                            9.832262e+05  5.403464e+05    676
+REMRAAM                          9.457029e+05  4.147169e+05    124
+JUMEIRAH VILLAGE TRIANGLE        9.434299e+05  4.084648e+05    275
+AL KHAIL HEIGHTS                 8.890136e+05  2.781369e+05     56
+LIWAN                            8.450721e+05  3.485572e+05    266
+Warsan First                     8.356455e+05  2.977327e+05     33
+DUBAI LAND RESIDENCE COMPLEX     8.198034e+05  1.056368e+06    289
+DUBAI SOUTH                      7.802844e+05  3.425352e+05    389
+DUBAI INVESTMENT PARK SECOND     7.734723e+05  8.498360e+05    123
+DISCOVERY GARDENS                7.697463e+05  2.877784e+05    547
+DUBAI SPORTS CITY                7.654772e+05  3.907891e+05    517
+DUBAI PRODUCTION CITY            7.280725e+05  3.618237e+05    356
+DUBAI STUDIO CITY                7.149262e+05  3.238960e+05    211
+Wadi Al Safa 7                   7.009076e+05  2.735091e+05     39
+DOWN TOWN JABAL ALI              6.442201e+05  1.900605e+05     63
+Madinat Hind 4                   6.169757e+05  2.894163e+05     68
+INTERNATIONAL CITY PH 2 & 3      5.315177e+05  3.322898e+05    214
+INTERNATIONAL CITY PH 1          5.191516e+05  2.933289e+05    618
+
+Highest mean group: BLUEWATERS (11028231)
+Highest std group: BLUEWATERS (12327375)
+Ratio of highest to lowest group mean: 21.24
+======================================================================
+Saved cleaned_data.csv with shape: (18085, 15)
