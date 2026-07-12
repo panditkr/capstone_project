@@ -1,0 +1,60 @@
+======================================================================
+TASK 1: UNCONSTRAINED DECISION TREE
+Train accuracy: 0.9967  Test accuracy: 0.8947  Gap: 0.1020
+======================================================================
+TASK 2: CONTROLLED DECISION TREE (max_depth=5, min_samples_split=20)
+Train accuracy: 0.8696  Test accuracy: 0.8772  Gap: -0.0077
+======================================================================
+TASK 3: GINI VS ENTROPY (max_depth=5)
+Gini test accuracy: 0.8767
+Entropy test accuracy: 0.8701
+======================================================================
+TASK 4: RANDOM FOREST (n_estimators=100, max_depth=10)
+Train accuracy: 0.8995  Test accuracy: 0.8933  AUC: 0.9630
+
+Top 5 features by importance:
+ ACTUAL_AREA                             0.310819
+ROOMS_EN                                0.257481
+NEAREST_LANDMARK_EN_Burj Al Arab        0.039791
+NEAREST_MALL_EN_Dubai Mall              0.034026
+NEAREST_METRO_EN_Creek Metro Station    0.019462
+======================================================================
+TASK 4a: GRADIENT BOOSTING
+Train accuracy: 0.9019  Test accuracy: 0.9013  AUC: 0.9647
+======================================================================
+TASK 4b: FEATURE ABLATION (lowest 5 importance features removed)
+Lowest 5 importance features: ['AREA_EN_MINA RASHID', 'AREA_EN_JUMEIRA BAY', 'AREA_EN_PEARL JUMEIRA', 'AREA_EN_DUBAI HEALTHCARE CITY - PHASE 1', 'AREA_EN_EMIRATE LIVING']
+Full model AUC: 0.96300
+Reduced model AUC (5 lowest-importance features removed): 0.96314
+Difference: -0.00014
+======================================================================
+TASK 5: 5-FOLD CROSS-VALIDATED AUC COMPARISON
+Logistic Regression: mean AUC = 0.9656  std = 0.0029
+Decision Tree (depth=5): mean AUC = 0.9158  std = 0.0054
+Random Forest: mean AUC = 0.9603  std = 0.0030
+Gradient Boosting: mean AUC = 0.9615  std = 0.0037
+======================================================================
+TASK 6: GRIDSEARCHCV ON RANDOM FOREST PIPELINE
+Best params: {'randomforestclassifier__max_depth': None, 'randomforestclassifier__min_samples_leaf': 1, 'randomforestclassifier__n_estimators': 200}
+Best CV score (AUC): 0.9701462559930866
+Total configurations evaluated: 18 grid points x 5 folds = 90 fits
+Best pipeline test-set AUC: 0.9707882638354229
+======================================================================
+TASK 7: MANUAL LEARNING CURVE
+fraction=0.2  n=2893  train_auc=1.0000  test_auc=0.9649
+fraction=0.4  n=5787  train_auc=1.0000  test_auc=0.9680
+fraction=0.6  n=8680  train_auc=1.0000  test_auc=0.9691
+fraction=0.8  n=11574  train_auc=1.0000  test_auc=0.9699
+fraction=1.0  n=14468  train_auc=1.0000  test_auc=0.9708
+======================================================================
+TASK 8: SERIALIZE BEST MODEL
+Saved best_model.pkl
+Reload-and-predict demo on 2 hand-crafted rows -> predictions: [0 1]
+======================================================================
+TASK 9: SUMMARY COMPARISON TABLE
+                             Model  CV Mean AUC  CV Std AUC  Test AUC
+               Logistic Regression     0.965557    0.002896  0.967256
+           Decision Tree (depth=5)     0.915810    0.005433  0.924242
+                     Random Forest     0.960291    0.002982  0.963003
+                 Gradient Boosting     0.961507    0.003700  0.964705
+Tuned Random Forest (GridSearchCV)     0.970146         NaN  0.970788
